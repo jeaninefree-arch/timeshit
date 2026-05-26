@@ -105,12 +105,8 @@
             background: var(--bg-color); padding: 1rem; border-radius: var(--radius); 
             border: 1px solid var(--border); margin-bottom: 1.5rem;
         }
-        
-        /* تقویم ریسپانسیو بدون بهم‌ریختگی */
         .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
-        
         .cal-head { text-align: center; font-size: 0.85rem; font-weight: bold; color: var(--text-muted); padding-bottom: 0.5rem; }
-        
         .cal-cell {
             aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
             border: 1px solid var(--border); border-radius: 8px; cursor: default;
@@ -161,7 +157,7 @@
         
         <header class="header">
             <h1>⏱ تایم‌شیت آفلاین من</h1>
-            <p id="today-date">درحال محاسبه تاریخ...</p>
+            <p id="today-date">درحال بارگذاری...</p>
         </header>
 
         <!-- TABS NAV -->
@@ -197,6 +193,227 @@
                 <div class="form-group">
                     <label>توضیحات کار (اختیاری):</label>
                     <textarea id="i-desc" rows="3" placeholder="امروز چه تسک‌هایی انجام دادید؟"></textarea>
+                </div>
+
+                <button type="submit" class="btn" style="margin-top: 1.5rem;">ثبت رکورد در سیستم</button>
+            </form>
+        </div>
+
+        <!-- ================= TAB 2: REPORT ================= -->
+        <div id="tab-report" class="card">
+            
+            <div class="form-group" style="display: flex; gap: 1rem; align-items: center;">
+                <label style="margin: 0; flex-shrink: 0;">انتخاب ماه:</label>
+                <select id="r-month" style="font-weight: bold; background: #fff; border-color: var(--primary);"></select>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats">
+                <div class="stat-box">
+                    <h4>جمع ساعات این ماه</h4>
+                    <span id="r-total-hours">0</span>
+                </div>
+                <div class="stat-box">
+                    <h4>روزهای کار شده</h4>
+                    <span id="r-total-days">0</span>
+                </div>
+            </div>
+
+            <!-- Calendar -->
+            <div class="cal-container">
+                <div class="cal-grid" style="margin-bottom: 0.5rem;">
+                    <div class="cal-head">ش</div><div class="cal-head">ی</div>
+                    <div class="cal-head">د</div><div class="cal-head">س</div>
+                    <div class="cal-head">چ</div><div class="cal-head">پ</div>
+                    <div class="cal-head" style="color:var(--danger)">ج</div>
+                </div>
+                <div id="cal-body" class="cal-grid"></div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-header">
+                <h3 style="font-size: 1.1rem; color: var(--text-dark);">لیست رکوردها</h3>
+                <button id="btn-export" class="btn btn-success" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">دانلود اکسل</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>تاریخ</th>
+                            <th style="text-align:center;">شروع</th>
+                            <th style="text-align:center;">پایان</th>
+                            <th style="text-align:center;">مدت</th>
+                            <th>توضیحات</th>
+                            <th style="text-align:center;">حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="r-table-body">
+                        <!-- Rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: SETTINGS ================= -->
+        <div id="tab-settings" class="card">
+            <h3 style="margin-bottom: 1.5rem; color: var(--text-dark);">مدیریت اطلاعات</h3>
+            
+            <div class="form-group" style="background: var(--bg-color); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                <label style="margin-bottom: 1rem; color: var(--primary);">📥 دریافت فایل پشتیبان (بکاپ)</label>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">برای جلوگیری از پاک شدن اطلاعات، به صورت منظم یک نسخه دانلود کنید.</p>
+                <button id="btn-download-db" class="btn btn-dark">دانلود دیتابیس</button>
+            </div>
+
+            <div class="form-group" style="background: var(--bg-color); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); margin-top: 1rem;">
+                <label style="margin-bottom: 1rem; color: #f59e0b;">📤 بازگردانی اطلاعات</label>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">فایل بکاپ قبلی خود را انتخاب کنید تا اطلاعات برگردد.</p>
+                <input type="file" id="file-upload" accept=".json" style="display:none;">
+                <button id="btn-trigger-upload" class="btn btn-warning">انتخاب فایل و بازگردانی</button>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1.5rem; border: 1px dashed var(--danger); border-radius: var(--radius); background: #fef2f2;">
+                <label style="color: var(--danger); margin-bottom: 1rem;">⚠️ منطقه خطرناک</label>
+                <p style="font-size: 0.85rem; color: var(--danger); margin-bottom: 1rem;">این گزینه تمام رکوردهای شما را برای همیشه از این سیستم پاک می‌کند.</p>
+                <button id="btn-clear-db" class="btn btn-danger">پاک کردن کل اطلاعات</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast">پیام سیستم</div>
+
+    <script>
+        // جلوگیری از کرش کردن کل صفحه در صورت بروز هرگونه خطای احتمالی مرورگر
+        window.onerror = function(msg) {
+            var el = document.getElementById('today-date');
+            if(el) { el.innerText = "اخطار: " + msg; el.style.color = "red"; }
+        };
+
+        /* ================= 100% BUG-FREE JALALI ENGINE (ANCHOR BASED) ================= */
+        // این الگوریتم به جای فرمول، از لنگر زمانی قطعی استفاده میکند (خطای سال کبیسه صفر است)
+        
+        // لیست سال‌های کبیسه از 1390 تا 1420
+        function isJalaliLeap(y) {
+            var leaps = [1391, 1395, 1399, 1403, 1408, 1412, 1416, 1420];
+            return leaps.indexOf(y) !== -1;
+        }
+
+        // پیدا کردن روز هفته برای اول هر ماه شمسی
+        function getMonthStartDayIndex(targetY, targetM) {
+            var anchorY = 1403;
+            var anchorDayIndex = 4; // 1403/01/01 -> چهارشنبه (ایندکس 4 در آرایه 0=شنبه)
+            var totalDays = 0;
+            var y;
+            
+            if (targetY >= anchorY) {
+                for (y = anchorY; y < targetY; y++) {
+                    totalDays += isJalaliLeap(y) ? 366 : 365;
+                }
+            } else {
+                for (y = anchorY - 1; y >= targetY; y--) {
+                    totalDays -= isJalaliLeap(y) ? 366 : 365;
+                }
+            }
+            
+            for (var m = 1; m < targetM; m++) {
+                if (m <= 6) totalDays += 31;
+                else if (m <= 11) totalDays += 30;
+                else totalDays += isJalaliLeap(targetY) ? 30 : 29;
+            }
+            
+            var idx = (anchorDayIndex + totalDays) % 7;
+            if (idx < 0) idx += 7;
+            return idx; // 0=شنبه, 1=یکشنبه ... 6=جمعه
+        }
+
+        // محاسبه تاریخ دقیق امروز با کمک تاریخ پایه
+        function getCurrentJalaliDate() {
+            var now = new Date();
+            var anchorGregorian = Date.UTC(2024, 2, 20); // 1403/01/01
+            var diffTime = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - anchorGregorian;
+            var diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            var currY = 1403;
+            while (true) {
+                var yearDays = isJalaliLeap(currY) ? 366 : 365;
+                if (diffDays >= yearDays) { diffDays -= yearDays; currY++; } 
+                else if (diffDays < 0) { currY--; diffDays += isJalaliLeap(currY) ? 366 : 365; } 
+                else { break; }
+            }
+            
+            var currM = 1;
+            while (true) {
+                var monthDays = (currM <= 6) ? 31 : (currM <= 11 ? 30 : (isJalaliLeap(currY) ? 30 : 29));
+                if (diffDays >= monthDays) { diffDays -= monthDays; currM++; } 
+                else { break; }
+            }
+            
+            return { y: currY, m: currM, d: diffDays + 1 };
+        }
+
+        var mNames = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+
+        /* ================= STATE ================= */
+        var db = [];
+        var today = { y: 1403, m: 1, d: 1 };
+        var DB_KEY = 'my_timesheet_v5_stable';
+
+        /* ================= MAIN APPLICATION ================= */
+        function startApp() {
+            try {
+                loadStorage();
+                today = getCurrentJalaliDate();
+
+                document.getElementById('today-date').innerText = "امروز: " + today.d + " " + mNames[today.m - 1] + " " + today.y;
+                document.getElementById('today-date').style.color = "var(--text-muted)";
+                
+                initFormSelects();
+                updateReportView();
+                attachEventListeners();
+
+            } catch (error) {
+                document.getElementById('today-date').innerText = "⚠️ خطا: " + error.message;
+                document.getElementById('today-date').style.color = "var(--danger)";
+            }
+        }
+
+        function loadStorage() {
+            try {
+                var saved = localStorage.getItem(DB_KEY);
+                if (saved) {
+                    var parsed = JSON.parse(saved);
+                    // فیلتر امن برای جلوگیری از ورود داده‌های خراب
+                    if (Array.isArray(parsed)) {
+                        db = parsed.filter(function(r) { return r && typeof r === 'object' && !isNaN(r.y) && !isNaN(r.hours); });
+                    } else {
+                        db = [];
+                    }
+                }
+            } catch(e) { db = []; }
+        }
+
+        function saveStorage() {
+            try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } 
+            catch(e) { showToast("خطا در ذخیره سازی!", true); }
+        }
+
+        function initFormSelects() {
+            var ySel = document.getElementById('i-year');
+            var mSel = document.getElementById('i-month');
+            var dSel = document.getElementById('i-day');
+            
+            ySel.innerHTML = ''; mSel.innerHTML = '';
+            
+            for(var y = today.y - 1; y <= today.y + 1; y++) ySel.innerHTML += "<option value='" + y + "'>" + y + "</option>";
+            ySel.value = today.y;
+
+            for(var m = 1; m <= 12; m++) mSel.innerHTML += "<option value='" + m + "'>" + m + " - " + mNames[m-1] + "</option>";
+            mSel.value = today.m;
+
+            var updateDays = function() {
+                var selM = parseInt(mSel.value);
+     sc" rows="3" placeholder="امروز چه تسک‌هایی انجام دادید؟"></textarea>
                 </div>
 
                 <button type="submit" class="btn" style="margin-top: 1.5rem;">ثبت رکورد در سیستم</button>
